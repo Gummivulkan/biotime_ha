@@ -24,6 +24,11 @@ ausgewertet. `Eingang` / `Ende Pause` / `Beginn Überstunden` → **anwesend**;
 Ein fertiges Dashboard (Anwesend / Pause / Abwesend, live gruppiert) liegt unter
 [`dashboard/biotime-dashboard.yaml`](dashboard/biotime-dashboard.yaml).
 
+> **Hinweis:** Die **Entity-IDs** hängen von der HA-Sprache ab (z. B. `sensor.biotime_present`
+> bei englischer, `sensor.biotime_anwesend` bei deutscher Oberfläche). Die **Status-Werte** der
+> Mitarbeiter-Sensoren sind dagegen immer `anwesend` / `pause` / `abwesend`. Das mitgelieferte
+> Dashboard filtert daher sprachunabhängig über das Attribut `pin`.
+
 ## Installation (HACS)
 
 1. HACS → ⋮ → **Benutzerdefinierte Repositories** → `https://github.com/Gummivulkan/biotime_ha`, Kategorie **Integration**.

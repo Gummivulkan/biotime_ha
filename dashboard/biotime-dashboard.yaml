@@ -1,26 +1,17 @@
 # BioTime-Anwesenheits-Dashboard (nur Bordmittel, keine Zusatz-Karten nötig).
 #
+# Sprachunabhängig: filtert die Mitarbeiter-Status-Sensoren über das Attribut `pin`
+# und zählt selbst — funktioniert egal ob deine HA-Entitäten deutsch oder englisch
+# benannt sind.
+#
 # Verwendung: Dashboard -> "Raw-Konfiguration bearbeiten" -> diese View einfügen,
-# ODER eine einzelne Karte über "Karte hinzufügen -> Manuell" mit jeweils einem
-# der unten stehenden Karten-Blöcke.
+# ODER "Karte hinzufügen -> Manuell" mit einem der Karten-Blöcke.
 
 title: Anwesenheit
 path: anwesenheit
 icon: mdi:account-clock
 cards:
-  # --- Überblick: Zähler je Status -------------------------------------------
-  - type: glance
-    title: Überblick
-    columns: 3
-    entities:
-      - entity: sensor.biotime_anwesend
-        name: Anwesend
-      - entity: sensor.biotime_in_pause
-        name: Pause
-      - entity: sensor.biotime_abwesend
-        name: Abwesend
-
-  # --- Live-Liste, gruppiert nach Status -------------------------------------
+  # --- Live-Liste + Zähler, gruppiert nach Status ----------------------------
   - type: markdown
     title: Wer ist gerade da?
     content: >
