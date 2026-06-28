@@ -1,0 +1,64 @@
+# BioTime-Anwesenheits-Dashboard (nur Bordmittel, keine Zusatz-Karten nötig).
+#
+# Verwendung: Dashboard -> "Raw-Konfiguration bearbeiten" -> diese View einfügen,
+# ODER eine einzelne Karte über "Karte hinzufügen -> Manuell" mit jeweils einem
+# der unten stehenden Karten-Blöcke.
+
+title: Anwesenheit
+path: anwesenheit
+icon: mdi:account-clock
+cards:
+  # --- Überblick: Zähler je Status -------------------------------------------
+  - type: glance
+    title: Überblick
+    columns: 3
+    entities:
+      - entity: sensor.biotime_anwesend
+        name: Anwesend
+      - entity: sensor.biotime_in_pause
+        name: Pause
+      - entity: sensor.biotime_abwesend
+        name: Abwesend
+
+  # --- Live-Liste, gruppiert nach Status -------------------------------------
+  - type: markdown
+    title: Wer ist gerade da?
+    content: >
+      {% set people = states.sensor
+           | selectattr('attributes.pin', 'defined') | list %}
+      {% set present = people | selectattr('state', 'eq', 'anwesend')
+           | sort(attribute='attributes.name') | list %}
+      {% set pause = people | selectattr('state', 'eq', 'pause')
+           | sort(attribute='attributes.name') | list %}
+      {% set absent = people | selectattr('state', 'eq', 'abwesend')
+           | sort(attribute='attributes.name') | list %}
+
+      ### 🟢 Anwesend ({{ present | count }})
+      {% for s in present %}
+      - **{{ s.attributes.name }}** — seit {{ s.attributes.since or '–' }}
+      {% endfor %}
+
+      ### ☕ Pause ({{ pause | count }})
+      {% for s in pause %}
+      - {{ s.attributes.name }} — seit {{ s.attributes.since or '–' }}
+      {% endfor %}
+
+      ### ⚪ Abwesend ({{ absent | count }})
+      {% for s in absent %}
+      - {{ s.attributes.name }}
+      {% endfor %}
+
+  # --- Optional: auto-aktualisierende Liste (benötigt HACS-Karte "auto-entities")
+  #     Zeigt automatisch ALLE Mitarbeiter-Status-Sensoren, ohne sie einzeln zu pflegen.
+  - type: custom:auto-entities
+    card:
+      type: entities
+      title: Alle Mitarbeiter
+      state_color: true
+    filter:
+      include:
+        - entity_id: sensor.biotime_*
+          attributes:
+            pin: "*"
+    sort:
+      method: state

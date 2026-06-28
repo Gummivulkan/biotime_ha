@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect BioTime",
+        "description": "Credentials of the BioTime terminal (same usercode/password as the web login).",
+        "data": {
+          "host": "Host / IP",
+          "port": "Port",
+          "usercode": "User code",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Device unreachable.",
+      "invalid_auth": "Wrong user code or password."
+    },
+    "abort": {
+      "already_configured": "This BioTime device is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "BioTime options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "anyone_present": { "name": "Anyone in building" }
+    },
+    "sensor": {
+      "count_anwesend": { "name": "Present" },
+      "count_pause": { "name": "On break" },
+      "count_abwesend": { "name": "Absent" }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "BioTime verbinden",
+        "description": "Zugangsdaten des BioTime-Terminals (gleicher Usercode/Passwort wie im Web-Login).",
+        "data": {
+          "host": "Host / IP",
+          "port": "Port",
+          "usercode": "Usercode",
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Gerät nicht erreichbar.",
+      "invalid_auth": "Usercode oder Passwort falsch."
+    },
+    "abort": {
+      "already_configured": "Dieses BioTime-Gerät ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "BioTime-Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall (Sekunden)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "anyone_present": { "name": "Jemand im Haus" }
+    },
+    "sensor": {
+      "count_anwesend": { "name": "Anwesend" },
+      "count_pause": { "name": "In Pause" },
+      "count_abwesend": { "name": "Abwesend" }
+    }
+  }
+}
