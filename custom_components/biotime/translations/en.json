@@ -10,6 +10,13 @@
           "usercode": "User code",
           "password": "Password"
         }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate BioTime",
+        "description": "Login to terminal {name} is failing – please re-enter the (possibly changed) password.",
+        "data": {
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -17,7 +24,8 @@
       "invalid_auth": "Wrong user code or password."
     },
     "abort": {
-      "already_configured": "This BioTime device is already configured."
+      "already_configured": "This BioTime device is already configured.",
+      "reauth_successful": "Re-authenticated."
     }
   },
   "options": {

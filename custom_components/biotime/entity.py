@@ -23,5 +23,5 @@ class BioTimeEntity(CoordinatorEntity[BioTimeCoordinator]):
             model=f"Firmware {terminal.get('firmwareVersion', '?')}",
             sw_version=terminal.get("webserverVersion"),
             serial_number=coordinator.serial,
-            configuration_url=coordinator.api._base,  # noqa: SLF001
+            configuration_url=coordinator.api.base_url,
         )

@@ -9,7 +9,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -39,14 +39,22 @@ async def async_setup_entry(
 ) -> None:
     coordinator: BioTimeCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    entities: list[SensorEntity] = [
-        BioTimeCountSensor(coordinator, status) for status in STATUSES
-    ]
-    entities.extend(
-        BioTimeEmployeeStatus(coordinator, pin)
-        for pin in coordinator.data["employees"]
-    )
-    async_add_entities(entities)
+    async_add_entities(BioTimeCountSensor(coordinator, status) for status in STATUSES)
+
+    # Mitarbeiter-Sensoren dynamisch anlegen – auch für PINs, die erst nach dem
+    # Setup auftauchen (neue Mitarbeiter, erstmaliges Stempeln). Kein HA-Neustart nötig.
+    known: set[str] = set()
+
+    @callback
+    def _add_new_employees() -> None:
+        new = [pin for pin in coordinator.data["employees"] if pin not in known]
+        if not new:
+            return
+        known.update(new)
+        async_add_entities(BioTimeEmployeeStatus(coordinator, pin) for pin in new)
+
+    _add_new_employees()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new_employees))
 
 
 class BioTimeCountSensor(BioTimeEntity, SensorEntity):

@@ -12,24 +12,31 @@ Aufruf (Zugangsdaten als Umgebungsvariablen, niemals im Code):
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
+import pathlib
 import sys
 import urllib.error
 import urllib.request
 from datetime import datetime, time
 
-# event -> Status (vgl. const.status_from_event in der Integration)
-PRESENT_EVENTS = {1, 4, 5}  # Eingang, Ende Pause, Beginn Überstunden
-BREAK_EVENT = 3  # Beginn Pause
+# Eine Quelle der Wahrheit: status_from_event + Status-Konstanten aus der
+# Integration laden. const.py ist reine Stdlib (keine HA-Importe), daher
+# direkt per importlib ladbar, ohne das Package-__init__ (mit HA-Importen)
+# auszuführen – so bleibt dieses Tool stdlib-only und ohne HA lauffähig.
+_CONST_PATH = (
+    pathlib.Path(__file__).resolve().parents[1]
+    / "custom_components"
+    / "biotime"
+    / "const.py"
+)
+_spec = importlib.util.spec_from_file_location("biotime_const", _CONST_PATH)
+_const = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_const)
 
-
-def status_from_event(event):
-    if event == BREAK_EVENT:
-        return "pause"
-    if event in PRESENT_EVENTS:
-        return "anwesend"
-    return "abwesend"
+status_from_event = _const.status_from_event
+STATUS_ABSENT = _const.STATUS_ABSENT
 
 
 def _post(host: str, path: str, body: str, cookie: str | None = None) -> bytes:
@@ -82,27 +89,33 @@ def _latest_punch(record: dict) -> dict | None:
     active = [p for p in record.get("attendances", []) if p.get("is_active")]
     if not active:
         return None
-    return max(active, key=lambda p: f"{p['day']} {p['date']}")
+    return max(active, key=lambda p: f"{p.get('day', '')} {p.get('date', '')}")
 
 
 def compute_status(host: str, cookie: str) -> dict:
     roster = json.loads(_get(host, "api_v2/employees", cookie)).get("values", [])
-    employees = {e["code"]: {"name": e["name"], "status": "abwesend", "since": None}
-                 for e in roster}
+    employees = {
+        e.get("code"): {"name": e.get("name"), "status": STATUS_ABSENT, "since": None}
+        for e in roster
+        if e.get("code")
+    }
 
     for record in fetch_today(host, cookie):
+        pin = record.get("pin")
+        if not pin:
+            continue
         punch = _latest_punch(record)
         if not punch:
             continue
-        employees[record["pin"]] = {
-            "name": record["name"],
-            "status": status_from_event(punch["event"]),
-            "since": punch["date"],
+        employees[pin] = {
+            "name": record.get("name", pin),
+            "status": status_from_event(punch.get("event")),
+            "since": punch.get("date"),
         }
 
-    counts = {"anwesend": 0, "pause": 0, "abwesend": 0}
+    counts: dict[str, int] = {}
     for emp in employees.values():
-        counts[emp["status"]] += 1
+        counts[emp["status"]] = counts.get(emp["status"], 0) + 1
 
     return {"counts": counts, "employees": employees}
 

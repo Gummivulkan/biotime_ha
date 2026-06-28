@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.util.dt as dt_util
 
@@ -61,7 +62,8 @@ class BioTimeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 int(start.timestamp() * 1000), int(end.timestamp() * 1000)
             )
         except BioTimeAuthError as err:
-            raise UpdateFailed(f"Authentifizierung fehlgeschlagen: {err}") from err
+            # löst den HA-Reauth-Flow aus (z. B. wenn das Terminal-Passwort geändert wurde)
+            raise ConfigEntryAuthFailed(f"Authentifizierung fehlgeschlagen: {err}") from err
         except BioTimeConnectionError as err:
             raise UpdateFailed(f"Gerät nicht erreichbar: {err}") from err
 
@@ -77,7 +79,11 @@ class BioTimeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "event": EVENT_NAMES.get(event) if event else None,
             }
 
-        # Vollständige Mitarbeiterliste (auch Abwesende) für stabile Entities
+        # Vollständige Mitarbeiterliste (auch Abwesende) für stabile Entities.
+        # Annahme (verifiziert für dieses Gerät): die Mitarbeiter-Kennung ist in
+        # beiden Endpunkten identisch – Roster liefert sie als `code`, Stempel als
+        # `pin`. Sollte ein Gerät hier je getrennte Namensräume verwenden, landen
+        # Gestempelte im setdefault-Zweig unten (separate Entity statt Merge).
         employees: dict[str, dict[str, Any]] = {}
         for emp in roster:
             pin = emp.get("code")

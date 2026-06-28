@@ -46,11 +46,17 @@ class BioTimeApi:
         self._token: str | None = None
 
     @property
+    def base_url(self) -> str:
+        """Basis-URL des Terminals (z. B. für configuration_url)."""
+        return self._base
+
+    @property
     def _password_hash(self) -> str:
         return hashlib.sha512(self._password.encode()).hexdigest()
 
     async def async_login(self) -> dict[str, Any]:
         """Authentifizieren und Token speichern. Gibt das ``value``-Objekt zurück."""
+        _LOGGER.debug("BioTime-Login an %s als %s", self._base, self._usercode)
         body = {"username": self._usercode, "password": self._password_hash}
         try:
             async with self._session.post(
@@ -84,6 +90,7 @@ class BioTimeApi:
                     timeout=_TIMEOUT,
                 ) as resp:
                     if resp.status == 401 and attempt == 1:
+                        _LOGGER.debug("401 auf %s – Token wird erneuert", path)
                         self._token = None
                         await self.async_login()
                         continue

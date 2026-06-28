@@ -10,6 +10,13 @@
           "usercode": "Usercode",
           "password": "Passwort"
         }
+      },
+      "reauth_confirm": {
+        "title": "BioTime neu anmelden",
+        "description": "Die Anmeldung am Terminal {name} schlägt fehl – bitte das (ggf. geänderte) Passwort erneut eingeben.",
+        "data": {
+          "password": "Passwort"
+        }
       }
     },
     "error": {
@@ -17,7 +24,8 @@
       "invalid_auth": "Usercode oder Passwort falsch."
     },
     "abort": {
-      "already_configured": "Dieses BioTime-Gerät ist bereits eingerichtet."
+      "already_configured": "Dieses BioTime-Gerät ist bereits eingerichtet.",
+      "reauth_successful": "Neu angemeldet."
     }
   },
   "options": {
